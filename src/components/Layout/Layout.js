@@ -1,9 +1,12 @@
-import React, {Fragment} from 'react'
+import React, {Fragment} from 'react';
+
+import Toolbar from '../UI/Navigation/Toolbar/Toolbar'
 
 import classes from './Layout.module.css'
 
 const layout = props => (
     <Fragment>
+        <Toolbar />
         <div>
                 Side, main, extra
         </div>
