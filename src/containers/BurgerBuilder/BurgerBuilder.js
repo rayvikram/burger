@@ -4,6 +4,10 @@ import Burger from '../../components/Burger/Burger'
 import BuildControls from '../../components/Burger/BuildControls/BuildControls'
 import Modal from '../../components/UI/Modal/Modal'
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary'
+import Spinner from '../../components/UI/Loader/Loader'
+import WithErrorHandler from '../../hoc/WithErrorHandler/WithErrorHandler'
+
+import axios from '../../Axios'
 
 const BURGERITEM_PRICE = {
     meat: 15,
@@ -23,6 +27,7 @@ class BurgerBuilder extends Component {
         totalPrice: 30,
         isPurchasable: false,
         purchasing: false,
+        loading: false,
     }
 
     updateIsPurchasable = (ingredients) => {
@@ -78,7 +83,29 @@ class BurgerBuilder extends Component {
     }
 
     handlePurchaseSuccess = () => {
-        alert('Your order is successful');
+        this.setState({
+            loading: true
+        });
+        let data = {
+            quantity: 9,
+            name: 'vikram',
+            price: 90
+        }
+        axios.post('/orders.json',data)
+            .then((response)=>{
+                console.log(response);
+                this.setState({
+                    loading: false,
+                    purchasing: false,
+                })
+            })
+            .catch((err)=>{
+                console.log(err);
+                this.setState({
+                    loading: false,
+                    purchasing: false,
+                });
+            });
     }
 
     render () {       
@@ -89,14 +116,25 @@ class BurgerBuilder extends Component {
         for(let item in disabledInfo) {
             disabledInfo[item] = disabledInfo[item] <= 0
         }
+
+        let modelChildren = (
+            <OrderSummary
+                totalPrice={this.state.totalPrice}
+                cancelClicked={this.handleHideBackdrop}
+                orderClicked={this.handlePurchaseSuccess}
+                ingredients={this.state.ingredients} />
+        )
+
+        if(this.state.loading) {
+            modelChildren = (
+                <Spinner />
+            )
+        }
+
         return (
         <Fragment>
             <Modal show={this.state.purchasing} hideBackdrop={this.handleHideBackdrop}>
-                <OrderSummary
-                    totalPrice={this.state.totalPrice}
-                    cancelClicked={this.handleHideBackdrop}
-                    orderClicked={this.handlePurchaseSuccess}
-                    ingredients={this.state.ingredients} />
+                {modelChildren}
             </Modal>
             <Burger ingredients={this.state.ingredients} />
             <BuildControls
@@ -111,4 +149,4 @@ class BurgerBuilder extends Component {
     }
 }
 
-export default BurgerBuilder
+export default WithErrorHandler(BurgerBuilder, axios);
